@@ -1,3 +1,4 @@
+from enum import unique
 import re
 import pygame
 from time import sleep
@@ -42,23 +43,28 @@ while running:
             running = False
 
 
-    if not count % 100:
-        for robot in robots:
-            rect = pygame.Rect(robot[0] * block_size, robot[1] * block_size, block_size, block_size)
-            pygame.draw.rect(display, (13, 210, 240), rect)
-                
-            robot[0] += robot[2]
-            robot[1] += robot[3]
+    seen = set()
+    unique = True
+    for robot in robots:
+        robot[0] += robot[2]
+        robot[1] += robot[3]
 
-            robot[0] %= width
-            robot[1] %= height
-        pygame.display.update()
-        display.fill((30, 30, 20))
+        robot[0] %= width
+        robot[1] %= height
+        
+        rect = pygame.Rect(robot[0] * block_size, robot[1] * block_size, block_size, block_size)
+        pygame.draw.rect(display, (13, 210, 240), rect)
+
+        if (robot[0], robot[1]) in seen:
+            unique = False
+        else: seen.add((robot[0], robot[1]))
 
     count += 1
-    if not count % (6588 * 100):
-        input()
-    # sleep(0.1)
+    pygame.display.update()
+    display.fill((30, 30, 20))
+    if unique: input(f"at: {count} Press Enter to Continue...")
+
+    sleep(0.001)
 
 
 
