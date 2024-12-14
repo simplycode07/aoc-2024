@@ -37,7 +37,7 @@ def update_robot(t):
     cv2.imwrite(f"{t}.png", grid)
 
 
-for t in range(10000):
+for t in range(100000):
     worked = update_robot(t)
     print(worked, t)
 
