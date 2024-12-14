@@ -59,6 +59,7 @@ while running:
         paused = True
         
     if not paused:
+        display.fill((30, 30, 20))
         for robot in robots:
             robot[0] += (robot[2] / slowness)
             robot[1] += (robot[3] / slowness)
@@ -73,7 +74,6 @@ while running:
         count += 1/slowness
     draw_text(display, f"at: {count}")
     pygame.display.update()
-    display.fill((30, 30, 20))
 
     sleep(0.001)
 
