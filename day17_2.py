@@ -19,7 +19,8 @@ program = list(map(int, program_match.group(1).split(',')))
 
 # 108,107,552,267,785 -> 6
 # 108,107,574,679,062 -> 10
-registers = {"A":108_107_574_679_062, "B":0, "C":0}
+# registers = {"A":108_107_574_679_062, "B":0, "C":0}
+registers = {"A":0, "B":0, "C":0}
 # print(registers)
 # print(program)
 
@@ -100,13 +101,13 @@ while 1:
         print(f"{registers["A"]:,}, {output}")
 
     elif output[-3:] == program[-3:]:
-        registers["A"] += 1_000_000
+        registers["A"] += 10_000_000
         print(f"{registers["A"]:,}, {output}")
 
     elif output[-2:] == program[-2:]:
-        registers["A"] += 10_000_000
+        registers["A"] += 1_000_000_000
         print(f"{registers["A"]:,}, {output}")
     else:
-        registers["A"] += 1_000_000_000
+        registers["A"] += 10_000_000_000
         print(f"{registers["A"]:,}, {output}")
 
