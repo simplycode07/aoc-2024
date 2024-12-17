@@ -90,24 +90,25 @@ while 1:
 
     elif output[-13:] == program[-13:]:
         registers["A"] += 1
-        print(f"{registers["A"]:,}, {output}")
+        # print(f"{registers["A"]:,}, {output}")
 
     elif output[-10:] == program[-10:]:
         registers["A"] += 100
-        print(f"{registers["A"]:,}, {output}")
+        # print(f"{registers["A"]:,}, {output}")
 
     elif output[-6:] == program[-6:]:
         registers["A"] += 100_000
-        print(f"{registers["A"]:,}, {output}")
+        # print(f"{registers["A"]:,}, {output}")
 
     elif output[-3:] == program[-3:]:
         registers["A"] += 10_000_000
-        print(f"{registers["A"]:,}, {output}")
+        # print(f"{registers["A"]:,}, {output}")
 
     elif output[-2:] == program[-2:]:
         registers["A"] += 1_000_000_000
-        print(f"{registers["A"]:,}, {output}")
+        # print(f"{registers["A"]:,}, {output}")
+
     else:
         registers["A"] += 10_000_000_000
-        print(f"{registers["A"]:,}, {output}")
+        # print(f"{registers["A"]:,}, {output}")
 
