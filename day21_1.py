@@ -1,4 +1,4 @@
-with open("sample.txt") as file:
+with open("input.txt") as file:
     raw_data = [line.rstrip() for line in file]
 
 keypad = [["7", "8", "9"],
@@ -17,11 +17,6 @@ directions = {"^":(-1, 0), "<":(0, -1), "v":(1, 0), ">":(0, 1)}
 dir_keypad = [[-1, "^", "A"],
               ["<", "v", ">"]]
 
-def swap(lis, i, j):
-    temp = lis[i]
-    lis[i] = lis[j]
-    lis[j] = temp
-
 def rotate(l):
     count = 1
     for i in range(len(l) - 2, -1, -1):
@@ -30,6 +25,28 @@ def rotate(l):
         else:
             break
     return l[-count:] + l[:-count]
+
+""" thanks cheatgpt for this abomination """
+from itertools import permutations
+
+def proximity_combinations(chars):
+    def proximity_score(order):
+        """Calculate a score for the proximity of identical characters."""
+        score = 0
+        for i, char in enumerate(order):
+            for j in range(i + 1, len(order)):
+                if order[j] == char:
+                    score += abs(j - i)
+        return score
+
+    # Generate all unique permutations
+    all_combinations = set(permutations(chars))
+
+    # Sort combinations by proximity score (higher is better, lower comes later)
+    sorted_combinations = sorted(all_combinations, key=lambda comb: (proximity_score(comb), comb))
+
+    return ["".join(comb) for comb in sorted_combinations]
+
 
 def check_gap(grid, pos, seq):
     for i, step in enumerate(seq):
@@ -78,14 +95,21 @@ def get_sequence(grid, pos, code):
             if panic[1]:
                 seq.append(curr_seq)
             else:
-                while not panic[1]:
-                    l = list(curr_seq)
-                    print(panic, curr_seq, l)
-                    # swap(l, panic[0], panic[0]+1)
-                    l = rotate(l)
-                    curr_seq = "".join(l)
-                    panic = check_gap(grid, pos.copy(), curr_seq)
-                    print(panic, curr_seq, l)
+                possible_seq = proximity_combinations(curr_seq)
+                for pos_seq in possible_seq:
+                    panic = check_gap(grid, pos.copy(), pos_seq)
+                    print(panic, pos_seq, pos)
+                    if panic[1]:
+                        curr_seq = pos_seq
+                        break
+                # while not panic[1]:
+                #     l = list(curr_seq)
+                #     print(panic, curr_seq, l)
+                #     # swap(l, panic[0], panic[0]+1)
+                #     l = rotate(l)
+                #     curr_seq = "".join(l)
+                #     panic = check_gap(grid, pos.copy(), curr_seq)
+                #     print(panic, curr_seq, l)
 
                 seq.append(curr_seq)
 
@@ -94,26 +118,28 @@ def get_sequence(grid, pos, code):
 
     return seq
 
-res = 0
-for code in raw_data:
-    final_seq = get_sequence(keypad, [3, 2], code)
-    r1 = get_sequence(dir_keypad, [0, 2], [char for s in final_seq for char in s])
-    r2 = get_sequence(dir_keypad, [0, 2], [char for s in r1 for char in s])
+# res = 0
+# for code in raw_data:
+#     final_seq = get_sequence(keypad, [3, 2], code)
+#     r1 = get_sequence(dir_keypad, [0, 2], [char for s in final_seq for char in s])
+#     r2 = get_sequence(dir_keypad, [0, 2], [char for s in r1 for char in s])
+#
+#     res += int(code[:3]) * len("".join(r2))
+#     print(int(code[:3]), len("".join(r2)))
+#
+# print(res)
+#
 
-    res += int(code[:3]) * len("".join(r2))
-    print(int(code[:3]), len("".join(r2)))
+# 985A , 528A
+final_seq = get_sequence(keypad, [3, 2], "528A")
+print("---------")
+r1 = get_sequence(dir_keypad, [0, 2], [char for s in final_seq for char in s])
+print("---------")
+r2 = get_sequence(dir_keypad, [0, 2], [char for s in r1 for char in s])
+print("---------")
 
-print(res)
-#
-# final_seq = get_sequence(keypad, [3, 2], "456A")
-# print("---------")
-# r1 = get_sequence(dir_keypad, [0, 2], [char for s in final_seq for char in s])
-# print("---------")
-# r2 = get_sequence(dir_keypad, [0, 2], [char for s in r1 for char in s])
-# print("---------")
-#
-#
-# print("".join(final_seq))
-# print("".join(r1))
-# print("".join(r2))
-# print(len("".join(r2)))
+
+print("".join(final_seq))
+print("".join(r1))
+print("".join(r2))
+print(len("".join(r2)))
