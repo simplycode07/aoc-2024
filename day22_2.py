@@ -13,7 +13,7 @@ for num in raw_data:
     secret_num = num
     pattern = []
     last = secret_num % 10
-    for i in range(2000):
+    for _ in range(2000):
         secret_num = prune(mix(secret_num, secret_num*64))
         secret_num = prune(mix(secret_num, int(secret_num / 32)))
         secret_num = prune(mix(secret_num, secret_num * 2048))
