@@ -1,22 +1,15 @@
 with open("input.txt") as file:
     raw_data = [int(line.rstrip()) for line in file]
 
-def mix(num1, num2):
-    return num1 ^ num2
-
-def prune(num):
-    return num % 16777216
-
-res = 0
 total = {}
 for num in raw_data:
     secret_num = num
     pattern = []
     last = secret_num % 10
     for _ in range(2000):
-        secret_num = prune(mix(secret_num, secret_num*64))
-        secret_num = prune(mix(secret_num, int(secret_num / 32)))
-        secret_num = prune(mix(secret_num, secret_num * 2048))
+        secret_num = ((secret_num << 6) ^ secret_num) % 16777216
+        secret_num = ((secret_num // 32) ^ secret_num) % 16777216
+        secret_num = ((secret_num << 11) ^ secret_num) % 16777216
         temp = secret_num % 10
         pattern.append((temp - last, temp))
         last = temp
@@ -27,7 +20,7 @@ for num in raw_data:
         val = pattern[i+3][1]
         if pat not in seen:
             seen.add(pat)
-            if pat not in total:
+            if not total.get(pat):
                 total[pat] = val
             else:
                 total[pat] += val
