@@ -1,145 +1,72 @@
+from collections import deque
+from itertools import product
+
 with open("input.txt") as file:
     raw_data = [line.rstrip() for line in file]
 
-keypad = [["7", "8", "9"],
-          ["4", "5", "6"],
-          ["1", "2", "3"],
-          [-1, "0", "A"]]
+num_keypad = [
+    ["7", "8", "9"],
+    ["4", "5", "6"],
+    ["1", "2", "3"],
+    [None, "0", "A"]
+]
 
-# keypad = [-1, 0, "A", 1, 2, 3, 4, 5, 6, 7, 8, 9]
+dir_keypad = [
+    [None, "^", "A"],
+    ["<", "v", ">"]
+]
 
-#               up       left    down    right
-# directions = [(0, -1), (-1, 0), (0, 1), (1, 0)]
+def get_sequence(keypad):
+    pos = {}
+    for r in range(len(keypad)):
+        for c in range(len(keypad[r])):
+            if keypad[r][c] is not None: pos[keypad[r][c]] = (r, c)
+    seqs = {}
+    for x in pos:
+        for y in pos:
+            if x == y:
+                seqs[(x, y)] = ["A"]
+                continue
+            possibilities = []
+            q = deque([(pos[x], "")])
+            optimal = float("inf")
+            while q:
+                (r, c), moves = q.popleft()
+                for nr, nc, nm in [(r - 1, c, "^"), (r + 1, c, "v"), (r, c - 1, "<"), (r, c + 1, ">")]:
+                    if nr < 0 or nc < 0 or nr >= len(keypad) or nc >= len(keypad[0]): continue
+                    if keypad[nr][nc] is None: continue
+                    if keypad[nr][nc] == y:
+                        if optimal < len(moves) + 1: break
+                        optimal = len(moves) + 1
+                        possibilities.append(moves + nm + "A")
+                    else:
+                        q.append(((nr, nc), moves + nm))
+                else:
+                    continue
+                break
+            seqs[(x, y)] = possibilities
+    return seqs
 
-#               up       left    down    right
-directions = {"^":(-1, 0), "<":(0, -1), "v":(1, 0), ">":(0, 1)}
+def solve(string, seqs):
+    options = [seqs[(x, y)] for x, y in zip("A" + string, string)]
+    return ["".join(x) for x in product(*options)]
 
-dir_keypad = [[-1, "^", "A"],
-              ["<", "v", ">"]]
+num_seqs = get_sequence(num_keypad)
+dir_seqs = get_sequence(dir_keypad)
 
-def rotate(l):
-    count = 1
-    for i in range(len(l) - 2, -1, -1):
-        if l[i] == l[-1]:
-            count += 1
-        else:
-            break
-    return l[-count:] + l[:-count]
+total = 0
 
-""" thanks cheatgpt for this abomination """
-from itertools import permutations
+for code in raw_data:
+    robot1 = solve(code, num_seqs)
+    next = robot1
+    for _ in range(2):
+        possible_next = []
+        for seq in next:
+            possible_next += solve(seq, dir_seqs)
 
-def proximity_combinations(chars):
-    def proximity_score(order):
-        """Calculate a score for the proximity of identical characters."""
-        score = 0
-        for i, char in enumerate(order):
-            for j in range(i + 1, len(order)):
-                if order[j] == char:
-                    score += abs(j - i)
-        return score
+        min_len = min(map(len, possible_next))
+        next = [seq for seq in possible_next if len(seq) == min_len]
 
-    # Generate all unique permutations
-    all_combinations = set(permutations(chars))
+    total += len(next[0]) * int(code[:3])
 
-    # Sort combinations by proximity score (higher is better, lower comes later)
-    sorted_combinations = sorted(all_combinations, key=lambda comb: (proximity_score(comb), comb))
-
-    return ["".join(comb) for comb in sorted_combinations]
-
-
-def check_gap(grid, pos, seq):
-    for i, step in enumerate(seq):
-        # print("check_gap", pos, step)
-        pos[0] += directions[step][0]
-        pos[1] += directions[step][1]
-        # print("check_gap", pos, step)
-
-        if grid[pos[0]][pos[1]] == -1:
-            return i, False
-
-    return -1, True
-
-def get_pos(grid, element):
-    for i, row in enumerate(grid):
-        for j, ele in enumerate(row):
-            if ele == element:
-                return (i, j)
-    return (-1, -1)
-
-final_robot = [2, 3]
-def get_sequence(grid, pos, code):
-    pos = pos
-    seq = []
-    for key in code:
-        final_pos = get_pos(grid, key)
-        # print(f"")
-        
-        diff_r = final_pos[0] - pos[0]
-        diff_c = final_pos[1] - pos[1]
-        # print(f"final_pos: {final_pos}, r:{diff_r}, c:{diff_c}, key: {key}")
-        
-        curr_seq = ""
-        if diff_c > 0:
-            curr_seq += ">"*diff_c
-        elif diff_c < 0:
-            curr_seq += "<"*-diff_c
-        
-        if diff_r > 0:
-            curr_seq += "v"*diff_r
-        elif diff_r < 0:
-            curr_seq += "^"*-diff_r
-
-        if curr_seq != "":
-            panic = check_gap(grid, pos.copy(), curr_seq)
-            if panic[1]:
-                seq.append(curr_seq)
-            else:
-                possible_seq = proximity_combinations(curr_seq)
-                for pos_seq in possible_seq:
-                    panic = check_gap(grid, pos.copy(), pos_seq)
-                    print(panic, pos_seq, pos)
-                    if panic[1]:
-                        curr_seq = pos_seq
-                        break
-                # while not panic[1]:
-                #     l = list(curr_seq)
-                #     print(panic, curr_seq, l)
-                #     # swap(l, panic[0], panic[0]+1)
-                #     l = rotate(l)
-                #     curr_seq = "".join(l)
-                #     panic = check_gap(grid, pos.copy(), curr_seq)
-                #     print(panic, curr_seq, l)
-
-                seq.append(curr_seq)
-
-        pos = list(final_pos)
-        seq.append("A")
-
-    return seq
-
-# res = 0
-# for code in raw_data:
-#     final_seq = get_sequence(keypad, [3, 2], code)
-#     r1 = get_sequence(dir_keypad, [0, 2], [char for s in final_seq for char in s])
-#     r2 = get_sequence(dir_keypad, [0, 2], [char for s in r1 for char in s])
-#
-#     res += int(code[:3]) * len("".join(r2))
-#     print(int(code[:3]), len("".join(r2)))
-#
-# print(res)
-#
-
-# 985A , 528A
-final_seq = get_sequence(keypad, [3, 2], "528A")
-print("---------")
-r1 = get_sequence(dir_keypad, [0, 2], [char for s in final_seq for char in s])
-print("---------")
-r2 = get_sequence(dir_keypad, [0, 2], [char for s in r1 for char in s])
-print("---------")
-
-
-print("".join(final_seq))
-print("".join(r1))
-print("".join(r2))
-print(len("".join(r2)))
+print(total)
